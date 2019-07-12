@@ -18,7 +18,6 @@ repositories {
 
 apply plugin: 'groovy'
 apply plugin: 'maven'
-apply plugin: 'maven'
 apply plugin: 'signing'
 
 if(project.hasProperty('ossrhUser') && project.hasProperty("release")) {

@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ******************************************************************************/
+package org.mini2Dx.mgcb
 
 import org.gradle.api.Project
 import org.gradle.api.file.DirectoryProperty
@@ -21,15 +22,18 @@ import org.gradle.api.file.FileCollection
 class MgcbExtension {
     final DirectoryProperty assetsDirectory;
     final DirectoryProperty projectDirectory;
+    final DirectoryProperty soundsDirectory, musicDirectory;
+
     FileCollection dlls;
-    DirectoryProperty soundsDirectory, musicDirectory;
     String platform;
     boolean compress;
-    boolean copyAssets;
 
     MgcbExtension(Project project) {
         assetsDirectory = project.objects.directoryProperty();
         projectDirectory = project.objects.directoryProperty();
+
+        soundsDirectory = project.objects.directoryProperty();
+        musicDirectory = project.objects.directoryProperty();
     }
 
     DirectoryProperty getAssetsDirectory() {
@@ -40,28 +44,12 @@ class MgcbExtension {
         return soundsDirectory
     }
 
-    void setSoundsDirectory(DirectoryProperty soundsDirectory) {
-        this.soundsDirectory = soundsDirectory
-    }
-
     DirectoryProperty getMusicDirectory() {
         return musicDirectory
     }
 
-    void setMusicDirectory(DirectoryProperty musicDirectory) {
-        this.musicDirectory = musicDirectory
-    }
-
     DirectoryProperty getProjectDirectory() {
         return projectDirectory
-    }
-
-    boolean getCopyAssets() {
-        return copyAssets
-    }
-
-    void setCopyAssets(boolean copyAssets) {
-        this.copyAssets = copyAssets
     }
 
     FileCollection getDlls() {

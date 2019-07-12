@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ******************************************************************************/
+package org.mini2Dx.mgcb
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.DirectoryProperty
@@ -20,68 +21,76 @@ import org.gradle.api.file.FileCollection
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 
 class MgcbTask extends DefaultTask {
 
     @InputDirectory
-    private DirectoryProperty assetsDirectoryProperty;
+    DirectoryProperty assetsDirectoryProperty;
+    @Optional
     @InputDirectory
-    private DirectoryProperty soundsDirectoryProperty;
+    DirectoryProperty soundsDirectoryProperty;
+    @Optional
     @InputDirectory
-    private DirectoryProperty musicDirectoryProperty;
-    @InputFiles
-    private FileCollection dllsProperty;
+    DirectoryProperty musicDirectoryProperty;
+
+    @Optional
+    @InputDirectory
+    FileCollection dllsProperty;
+    @Optional
     @Input
-    private String platform;
+    String platform;
     @Input
-    private boolean compress;
-    @Input
-    private boolean copyAssets;
+    boolean compress;
 
     @OutputDirectory
-    private DirectoryProperty projectDirectoryProperty;
+    DirectoryProperty projectDirectoryProperty;
 
     private File soundsDir, musicDir;
 
     @TaskAction
     public void run() {
-        final File assetsDir = assetsDirectoryProperty.getAsFile();
-        final File outputDir = projectDirectoryProperty.getAsFile();
-
-        final File [] fallbackSoundsDir = [
-                new File(assetsDir, "sfx"),
-                new File(assetsDir, "sounds"),
-                new File(assetsDir, "sound"),
-                new File(assetsDir, "soundeffects"),
-                new File(assetsDir, "sound-effects")
-        ];
-        final File [] fallbackMusicDir = [
-                new File(assetsDir, "tracks"),
-                new File(assetsDir, "music"),
-                new File(assetsDir, "soundtrack")
-        ];
+        final File assetsDir = assetsDirectoryProperty.get().asFile;
+        final File outputDir = projectDirectoryProperty.get().asFile;
 
         if(soundsDirectoryProperty == null || !soundsDirectoryProperty.isPresent()) {
-            soundsDir = soundsDirectoryProperty.getAsFile();
-        } else {
+            final File [] fallbackSoundsDir = [
+                    new File(assetsDir, "sfx"),
+                    new File(assetsDir, "sounds"),
+                    new File(assetsDir, "sound"),
+                    new File(assetsDir, "soundeffects"),
+                    new File(assetsDir, "sound-effects"),
+                    assetsDir
+            ];
+
             for(int i = 0; i < fallbackSoundsDir.length; i++) {
                 if(fallbackSoundsDir[i].exists()) {
                     soundsDir = fallbackSoundsDir[i];
                     break;
                 }
             }
-        }
-        if(musicDirectoryProperty == null || !musicDirectoryProperty.isPresent()) {
-            musicDir = musicDirectoryProperty.getAsFile();
         } else {
+            soundsDir = soundsDirectoryProperty.get().getAsFile();
+        }
+
+        if(musicDirectoryProperty == null || !musicDirectoryProperty.isPresent()) {
+            final File [] fallbackMusicDir = [
+                    new File(assetsDir, "tracks"),
+                    new File(assetsDir, "music"),
+                    new File(assetsDir, "soundtrack"),
+                    assetsDir
+            ];
+
             for(int i = 0; i < fallbackMusicDir.length; i++) {
                 if(fallbackMusicDir[i].exists()) {
                     musicDir = fallbackMusicDir[i];
                     break;
                 }
             }
+        } else {
+            musicDir = musicDirectoryProperty.get().getAsFile();
         }
 
         final PrintWriter printWriter = new PrintWriter(new File(outputDir, "Content.mgcb"), "UTF-8");
@@ -90,7 +99,7 @@ class MgcbTask extends DefaultTask {
         printWriter.println();
         printWriter.println("/outputDir:bin/\$(Platform)")
         printWriter.println("/intermediateDir:obj/\$(Platform)")
-        printWriter.println("/platform:" + platform)
+        printWriter.println("/platform:" + (platform == null ? "DesktopGL" : platform))
         printWriter.println("/config:")
         printWriter.println("/profile:Reach")
         printWriter.println("/compress:" + (compress ? "True" : "False"))
@@ -109,7 +118,10 @@ class MgcbTask extends DefaultTask {
         printWriter.println("#---------------------------------- Content ---------------------------------#");
         printWriter.println();
 
-        appendAssets(assetsDir, printWriter);
+        appendAssets(outputDir, assetsDir, printWriter);
+
+        printWriter.flush();
+        printWriter.close();
     }
 
     private void appendAssets(File outputDir, File directory, PrintWriter printWriter) {
@@ -181,18 +193,40 @@ class MgcbTask extends DefaultTask {
         if(soundsDir == null) {
             return false;
         }
-        return file.getAbsolutePath().startsWith(soundsDir.getAbsolutePath());
+        if(file.getAbsolutePath().startsWith(soundsDir.getAbsolutePath())) {
+            if(file.getName().endsWith(".ogg")) {
+                return true;
+            }
+            if(file.getName().endsWith(".wav")) {
+                return true;
+            }
+            if(file.getName().endsWith(".mp3")) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean isMusic(File file) {
         if(musicDir == null) {
             return false;
         }
-        return file.getAbsolutePath().startsWith(musicDir.getAbsolutePath());
+        if(file.getAbsolutePath().startsWith(musicDir.getAbsolutePath())) {
+            if(file.getName().endsWith(".ogg")) {
+                return true;
+            }
+            if(file.getName().endsWith(".wav")) {
+                return true;
+            }
+            if(file.getName().endsWith(".mp3")) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private String getRelativePath(File outputDir, File file) {
-        return new File(outputDir).toURI().relativize(new File(file).toURI()).getPath();
+        return new File(outputDir.getAbsolutePath()).toURI().relativize(new File(file.getAbsolutePath()).toURI()).getPath();
     }
 
     private String getSuffix(File file) {

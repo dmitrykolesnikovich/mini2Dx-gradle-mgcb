@@ -13,7 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ******************************************************************************/
+package org.mini2Dx.mgcb
 
+import org.gradle.api.Action
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
@@ -21,7 +23,20 @@ class MgcbPlugin implements Plugin<Project> {
 
     @Override
     void apply(Project project) {
-        project.extensions.create("mgcb", MgcbExtension);
-        project.task('mgcb', type: MgcbTask);
+        def extension = project.extensions.create("mgcb", MgcbExtension, project);
+
+        project.getTasks().register("generateMonoGameContent", MgcbTask.class, new Action<MgcbTask>() {
+            public void execute(MgcbTask task) {
+                task.assetsDirectoryProperty = extension.assetsDirectory;
+                task.projectDirectoryProperty = extension.projectDirectory;
+
+                task.soundsDirectoryProperty = extension.soundsDirectory;
+                task.musicDirectoryProperty = extension.musicDirectory;
+
+                task.dllsProperty = extension.dlls;
+                task.platform = extension.platform;
+                task.compress = extension.compress;
+            }
+        });
     }
 }
