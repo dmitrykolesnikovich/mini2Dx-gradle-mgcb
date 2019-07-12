@@ -21,6 +21,7 @@ class MgcbPlugin implements Plugin<Project> {
 
     @Override
     void apply(Project project) {
-
+        project.extensions.create("mgcb", MgcbExtension);
+        project.task('mgcb', type: MgcbTask);
     }
 }
