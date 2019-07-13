@@ -37,7 +37,7 @@ class MgcbTask extends DefaultTask {
     DirectoryProperty musicDirectoryProperty;
 
     @Optional
-    @InputDirectory
+    @InputFiles
     FileCollection dllsProperty;
     @Optional
     @Input
@@ -110,7 +110,7 @@ class MgcbTask extends DefaultTask {
 
         if(dllsProperty != null && !dllsProperty.isEmpty()) {
             for(File dllFile : dllsProperty.files) {
-                printWriter.println("/reference:" + getRelativePath(outputDir, dllFile));
+                printWriter.println("/reference:" + getFileRelativePath(outputDir, dllFile));
             }
         }
 
@@ -143,6 +143,8 @@ class MgcbTask extends DefaultTask {
                 appendSound(outputDir, file, printWriter);
             } else if(isMusic(file)) {
                 appendMusic(outputDir, file, printWriter);
+            } else if(isSpritefont(file)) {
+                appendSpriteFont(outputDir, file, printWriter);
             } else {
                 appendRaw(outputDir, file, printWriter);
             }
@@ -151,14 +153,14 @@ class MgcbTask extends DefaultTask {
     }
 
     private void appendRaw(File outputDir, File file, PrintWriter printWriter) {
-        printWriter.println("#begin " + getRelativePath(outputDir, file));
+        printWriter.println("#begin " + getFileRelativePath(outputDir, file));
         printWriter.println("/importer:mini2DxContentImporter");
         printWriter.println("/processor:mini2DxContentProcessor");
-        printWriter.println("/build:" + getRelativePath(outputDir, file) + ";" + file.getName() + getSuffix(file));
+        printWriter.println("/build:" + getFileRelativePath(outputDir, file) + ";" + file.getName() + getSuffix(file));
     }
 
     private void appendSound(File outputDir, File file, PrintWriter printWriter) {
-        printWriter.println("#begin " + getRelativePath(outputDir, file));
+        printWriter.println("#begin " + getFileRelativePath(outputDir, file));
         if(file.getPath().endsWith(".wav")) {
             printWriter.println("/importer:WavImporter");
         } else if(file.getPath().endsWith(".mp3")) {
@@ -168,11 +170,11 @@ class MgcbTask extends DefaultTask {
         }
         printWriter.println("/processor:SoundEffectProcessor");
         printWriter.println("/processorParam:Quality=Best");
-        printWriter.println("/build:" + getRelativePath(outputDir, file) + ";" + file.getName() + getSuffix(file));
+        printWriter.println("/build:" + getFileRelativePath(outputDir, file) + ";" + file.getName() + getSuffix(file));
     }
 
     private void appendMusic(File outputDir, File file, PrintWriter printWriter) {
-        printWriter.println("#begin " + getRelativePath(outputDir, file));
+        printWriter.println("#begin " + getFileRelativePath(outputDir, file));
         if(file.getPath().endsWith(".wav")) {
             printWriter.println("/importer:WavImporter");
         } else if(file.getPath().endsWith(".mp3")) {
@@ -182,11 +184,24 @@ class MgcbTask extends DefaultTask {
         }
         printWriter.println("/processor:SongProcessor");
         printWriter.println("/processorParam:Quality=Best");
-        printWriter.println("/build:" + getRelativePath(outputDir, file) + ";" + file.getName() + getSuffix(file));
+        printWriter.println("/build:" + getFileRelativePath(outputDir, file) + ";" + file.getName() + getSuffix(file));
+    }
+
+    private void appendSpriteFont(File outputDir, File file, PrintWriter printWriter) {
+        printWriter.println("#begin " + getFileRelativePath(outputDir, file));
+        printWriter.println("/importer:FontDescriptionImporter");
+        printWriter.println("/processor:FontDescriptionProcessor");
+        printWriter.println("/processorParam:PremultiplyAlpha=True");
+        printWriter.println("/processorParam:TextureFormat=Compressed");
+        printWriter.println("/build:" + getFileRelativePath(outputDir, file) + ";" + file.getName() + getSuffix(file));
     }
 
     private boolean isGlslShader(File file) {
         return file.getAbsolutePath().endsWith(".glsl");
+    }
+
+    private boolean isSpritefont(File file) {
+        return file.getAbsolutePath().endsWith(".spritefont");
     }
 
     private boolean isSound(File file) {
@@ -225,11 +240,79 @@ class MgcbTask extends DefaultTask {
         return false;
     }
 
-    private String getRelativePath(File outputDir, File file) {
-        return new File(outputDir.getAbsolutePath()).toURI().relativize(new File(file.getAbsolutePath()).toURI()).getPath();
+    private String getFileRelativePath(File outputDir, File file) {
+        return getRelativePath(outputDir.absolutePath, file.absolutePath, File.separator);
     }
 
     private String getSuffix(File file) {
         return file.getName().substring(file.getName().lastIndexOf('.'));
+    }
+
+    public static String getRelativePath(String outputDir, String file, String fileSeperator) {
+        if(file.startsWith(outputDir)) {
+            final String result = file.replace(outputDir, "").replace('\\', '/');
+            if(result.startsWith("/")) {
+                return result.substring(1);
+            }
+            return result;
+        }
+
+        if(fileSeperator.equals("/")) {
+            fileSeperator = "\\/";
+        } else if(fileSeperator.equals("\\")) {
+            fileSeperator = "\\\\";
+        }
+
+        if(outputDir.endsWith("/")) {
+            outputDir = outputDir.substring(0, outputDir.lastIndexOf('/'));
+        }
+        if(outputDir.startsWith("/")) {
+            outputDir = outputDir.substring(1);
+        } else if(outputDir.matches("^[A-Z]:.+")) {
+            outputDir = outputDir.substring(3);
+        }
+        if(file.startsWith("/")) {
+            file = file.substring(1);
+        } else if(file.matches("^[A-Z]:.+")) {
+            file = file.substring(3);
+        }
+
+        final String [] outputDirComponents = outputDir.split(fileSeperator);
+        final String [] fileComponents = file.split(fileSeperator);
+
+        int indexResult = -1;
+
+        for(int i = 0; i < outputDirComponents.length && i < fileComponents.length; i++) {
+            if(!outputDirComponents[i].equals(fileComponents[i])) {
+                break;
+            }
+            indexResult = i;
+        }
+
+        final StringBuilder result = new StringBuilder();
+
+        if(indexResult < 0) {
+            //Relative via root
+            for(int i = 0; i < outputDirComponents.length; i++) {
+                result.append("../");
+            }
+            for(int i = 0; i < fileComponents.length; i++) {
+                result.append(fileComponents[i]);
+                if(i < fileComponents.length - 1) {
+                    result.append('/');
+                }
+            }
+        } else {
+            for(int i = outputDirComponents.length - 1; i > indexResult; i--) {
+                result.append("../");
+            }
+            for(int i = indexResult + 1; i < fileComponents.length; i++) {
+                result.append(fileComponents[i]);
+                if(i < fileComponents.length - 1) {
+                    result.append('/');
+                }
+            }
+        }
+        return result.toString();
     }
 }
