@@ -118,20 +118,20 @@ class MgcbTask extends DefaultTask {
         printWriter.println("#---------------------------------- Content ---------------------------------#");
         printWriter.println();
 
-        appendAssets(outputDir, assetsDir, printWriter);
+        appendAssets(outputDir, assetsDir, assetsDir, printWriter);
 
         printWriter.flush();
         printWriter.close();
     }
 
-    private void appendAssets(File outputDir, File directory, PrintWriter printWriter) {
+    private void appendAssets(File outputDir, File assetDir, File directory, PrintWriter printWriter) {
         if(!directory.isDirectory()) {
             return;
         }
 
         for(File file : directory.listFiles()) {
             if(file.isDirectory()) {
-                appendAssets(outputDir, file, printWriter);
+                appendAssets(outputDir, assetDir, file, printWriter);
                 continue;
             }
 
@@ -140,26 +140,26 @@ class MgcbTask extends DefaultTask {
             }
 
             if(isSound(file)) {
-                appendSound(outputDir, file, printWriter);
+                appendSound(outputDir, assetDir, file, printWriter);
             } else if(isMusic(file)) {
-                appendMusic(outputDir, file, printWriter);
+                appendMusic(outputDir, assetDir, file, printWriter);
             } else if(isSpritefont(file)) {
-                appendSpriteFont(outputDir, file, printWriter);
+                appendSpriteFont(outputDir, assetDir, file, printWriter);
             } else {
-                appendRaw(outputDir, file, printWriter);
+                appendRaw(outputDir, assetDir, file, printWriter);
             }
             printWriter.println();
         }
     }
 
-    private void appendRaw(File outputDir, File file, PrintWriter printWriter) {
+    private void appendRaw(File outputDir, File assetDir, File file, PrintWriter printWriter) {
         printWriter.println("#begin " + getFileRelativePath(outputDir, file));
         printWriter.println("/importer:mini2DxContentImporter");
         printWriter.println("/processor:mini2DxContentProcessor");
-        printWriter.println("/build:" + getFileRelativePath(outputDir, file) + ";" + file.getName() + getSuffix(file));
+        printWriter.println("/build:" + getFileRelativePath(outputDir, file) + ";" + getFileRelativePath(assetDir, file) + getSuffix(file));
     }
 
-    private void appendSound(File outputDir, File file, PrintWriter printWriter) {
+    private void appendSound(File outputDir, File assetDir, File file, PrintWriter printWriter) {
         printWriter.println("#begin " + getFileRelativePath(outputDir, file));
         if(file.getPath().endsWith(".wav")) {
             printWriter.println("/importer:WavImporter");
@@ -170,10 +170,10 @@ class MgcbTask extends DefaultTask {
         }
         printWriter.println("/processor:SoundEffectProcessor");
         printWriter.println("/processorParam:Quality=Best");
-        printWriter.println("/build:" + getFileRelativePath(outputDir, file) + ";" + file.getName() + getSuffix(file));
+        printWriter.println("/build:" + getFileRelativePath(outputDir, file) + ";" + getFileRelativePath(assetDir, file) + getSuffix(file));
     }
 
-    private void appendMusic(File outputDir, File file, PrintWriter printWriter) {
+    private void appendMusic(File outputDir, File assetDir, File file, PrintWriter printWriter) {
         printWriter.println("#begin " + getFileRelativePath(outputDir, file));
         if(file.getPath().endsWith(".wav")) {
             printWriter.println("/importer:WavImporter");
@@ -184,16 +184,16 @@ class MgcbTask extends DefaultTask {
         }
         printWriter.println("/processor:SongProcessor");
         printWriter.println("/processorParam:Quality=Best");
-        printWriter.println("/build:" + getFileRelativePath(outputDir, file) + ";" + file.getName() + getSuffix(file));
+        printWriter.println("/build:" + getFileRelativePath(outputDir, file) + ";" + getFileRelativePath(assetDir, file) + getSuffix(file));
     }
 
-    private void appendSpriteFont(File outputDir, File file, PrintWriter printWriter) {
+    private void appendSpriteFont(File outputDir, File assetDir, File file, PrintWriter printWriter) {
         printWriter.println("#begin " + getFileRelativePath(outputDir, file));
         printWriter.println("/importer:FontDescriptionImporter");
         printWriter.println("/processor:FontDescriptionProcessor");
         printWriter.println("/processorParam:PremultiplyAlpha=True");
         printWriter.println("/processorParam:TextureFormat=Compressed");
-        printWriter.println("/build:" + getFileRelativePath(outputDir, file) + ";" + file.getName() + getSuffix(file));
+        printWriter.println("/build:" + getFileRelativePath(outputDir, file) + ";" + getFileRelativePath(assetDir, file) + getSuffix(file));
     }
 
     private boolean isGlslShader(File file) {
