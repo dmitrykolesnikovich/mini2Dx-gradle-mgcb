@@ -1,3 +1,5 @@
+[1.0.2-SNAPSHOT]
+
 [1.0.1]
 - Fixed assets not being packed to correct relative directories
 
