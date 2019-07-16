@@ -1,4 +1,5 @@
-[1.0.1-SNAPSHOT]
+[1.0.1]
+- Fixed assets not being packed to correct relative directories
 
 [1.0.0]
 - Inital release
