@@ -145,6 +145,8 @@ class MgcbTask extends DefaultTask {
                 appendMusic(outputDir, assetDir, file, printWriter);
             } else if(isSpritefont(file)) {
                 appendSpriteFont(outputDir, assetDir, file, printWriter);
+            } else if(isMonoGameEffect(file)) {
+                appendMonoGameEffect(outputDir, assetDir, file, printWriter);
             } else {
                 appendRaw(outputDir, assetDir, file, printWriter);
             }
@@ -196,12 +198,24 @@ class MgcbTask extends DefaultTask {
         printWriter.println("/build:" + getFileRelativePath(outputDir, file) + ";" + getFileRelativePath(assetDir, file) + getSuffix(file));
     }
 
+    private void appendMonoGameEffect(File outputDir, File assetDir, File file, PrintWriter printWriter) {
+        printWriter.println("#begin " + getFileRelativePath(outputDir, file));
+        printWriter.println("/importer:EffectImporter");
+        printWriter.println("/processor:EffectProcessor");
+        printWriter.println("/processorParam:DebugMode=Auto");
+        printWriter.println("/build:" + getFileRelativePath(outputDir, file) + ";" + getFileRelativePath(assetDir, file) + getSuffix(file));
+    }
+
     private boolean isGlslShader(File file) {
         return file.getAbsolutePath().endsWith(".glsl");
     }
 
     private boolean isSpritefont(File file) {
         return file.getAbsolutePath().endsWith(".spritefont");
+    }
+
+    private boolean isMonoGameEffect(File file) {
+        return file.getAbsolutePath().endsWith(".fx");
     }
 
     private boolean isSound(File file) {
