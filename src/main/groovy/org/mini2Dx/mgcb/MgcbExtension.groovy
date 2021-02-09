@@ -18,11 +18,13 @@ package org.mini2Dx.mgcb
 import org.gradle.api.Project
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.FileCollection
+import org.gradle.api.provider.ListProperty
 
 class MgcbExtension {
     final DirectoryProperty assetsDirectory;
     final DirectoryProperty projectDirectory;
     final DirectoryProperty soundsDirectory, musicDirectory;
+    final ListProperty<String> excludes;
 
     FileCollection dlls;
     String platform;
@@ -34,6 +36,8 @@ class MgcbExtension {
 
         soundsDirectory = project.objects.directoryProperty();
         musicDirectory = project.objects.directoryProperty();
+
+        excludes = project.objects.listProperty(String.class);
     }
 
     DirectoryProperty getAssetsDirectory() {
@@ -50,6 +54,10 @@ class MgcbExtension {
 
     DirectoryProperty getProjectDirectory() {
         return projectDirectory
+    }
+
+    ListProperty<String> getExcludes() {
+        return excludes
     }
 
     FileCollection getDlls() {

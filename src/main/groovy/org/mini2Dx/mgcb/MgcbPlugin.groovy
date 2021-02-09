@@ -33,6 +33,8 @@ class MgcbPlugin implements Plugin<Project> {
                 task.soundsDirectoryProperty = extension.soundsDirectory;
                 task.musicDirectoryProperty = extension.musicDirectory;
 
+                task.excludes = extension.excludes;
+
                 task.dllsProperty = extension.dlls;
                 task.platform = extension.platform;
                 task.compress = extension.compress;

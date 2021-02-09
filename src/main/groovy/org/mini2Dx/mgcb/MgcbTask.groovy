@@ -18,12 +18,18 @@ package org.mini2Dx.mgcb
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.FileCollection
+import org.gradle.api.file.FileTree
+import org.gradle.api.provider.ListProperty
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.util.PatternFilterable
+import org.gradle.api.tasks.util.PatternSet
+
+import java.util.function.Consumer
 
 class MgcbTask extends DefaultTask {
 
@@ -35,6 +41,10 @@ class MgcbTask extends DefaultTask {
     @Optional
     @InputDirectory
     DirectoryProperty musicDirectoryProperty;
+
+    @Optional
+    @Input
+    ListProperty<String> excludes = project.objects.listProperty(String.class);
 
     @Optional
     @InputFiles
@@ -54,6 +64,13 @@ class MgcbTask extends DefaultTask {
     public void run() {
         final File assetsDir = assetsDirectoryProperty.get().asFile;
         final File outputDir = projectDirectoryProperty.get().asFile;
+
+        final PatternSet patternSet = new PatternSet();
+        if(excludes != null && excludes.get() != null) {
+            patternSet.exclude(excludes.get());
+        }
+
+        FileTree assetsFileTree = assetsDirectoryProperty.getAsFileTree().matching(patternSet);
 
         if(soundsDirectoryProperty == null || !soundsDirectoryProperty.isPresent()) {
             final File [] fallbackSoundsDir = [
@@ -118,40 +135,40 @@ class MgcbTask extends DefaultTask {
         printWriter.println("#---------------------------------- Content ---------------------------------#");
         printWriter.println();
 
-        appendAssets(outputDir, assetsDir, assetsDir, printWriter);
+        appendAssets(outputDir, assetsFileTree, assetsDir, assetsDir, printWriter);
 
         printWriter.flush();
         printWriter.close();
     }
 
-    private void appendAssets(File outputDir, File assetDir, File directory, PrintWriter printWriter) {
+    private void appendAssets(File outputDir, FileTree assetsFileTree, File assetsDir, File directory, PrintWriter printWriter) {
         if(!directory.isDirectory()) {
             return;
         }
+        assetsFileTree.forEach(new Consumer<File>() {
+            @Override
+            void accept(File file) {
+                if(file.isDirectory()) {
+                    return;
+                }
+                if(isGlslShader(file)) {
+                    return;
+                }
 
-        for(File file : directory.listFiles()) {
-            if(file.isDirectory()) {
-                appendAssets(outputDir, assetDir, file, printWriter);
-                continue;
+                if(isSound(file)) {
+                    appendSound(outputDir, assetsDir, file, printWriter);
+                } else if(isMusic(file)) {
+                    appendMusic(outputDir, assetsDir, file, printWriter);
+                } else if(isSpritefont(file)) {
+                    appendSpriteFont(outputDir, assetsDir, file, printWriter);
+                } else if(isMonoGameEffect(file)) {
+                    appendMonoGameEffect(outputDir, assetsDir, file, printWriter);
+                } else {
+                    appendRaw(outputDir, assetsDir, file, printWriter);
+                }
+                printWriter.println();
             }
-
-            if(isGlslShader(file)) {
-                continue;
-            }
-
-            if(isSound(file)) {
-                appendSound(outputDir, assetDir, file, printWriter);
-            } else if(isMusic(file)) {
-                appendMusic(outputDir, assetDir, file, printWriter);
-            } else if(isSpritefont(file)) {
-                appendSpriteFont(outputDir, assetDir, file, printWriter);
-            } else if(isMonoGameEffect(file)) {
-                appendMonoGameEffect(outputDir, assetDir, file, printWriter);
-            } else {
-                appendRaw(outputDir, assetDir, file, printWriter);
-            }
-            printWriter.println();
-        }
+        });
     }
 
     private void appendRaw(File outputDir, File assetDir, File file, PrintWriter printWriter) {
