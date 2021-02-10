@@ -12,7 +12,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath "org.mini2Dx:gradle-mini2Dx-mgcb:1.0.0"
+        classpath "org.mini2Dx:gradle-mini2Dx-mgcb:1.1.0"
     }
 }
 
@@ -25,6 +25,7 @@ project(":your-project") {
         assetsDirectory = file('../path/to/assets')
         projectDirectory = file('../path/to/monogame/Content')
         dlls = files('../path/to/monogame-pipeline-ext.dll')
+		excludes = ['**/.cache/*']
     }
 ...
 ```
