@@ -1,4 +1,5 @@
-[1.1.1-SNAPSHOT]
+[1.2.0]
+- Allow music/sfx quality to be specified (defaults to Medium)
 
 [1.1.0]
 - Add excludes pattern matching

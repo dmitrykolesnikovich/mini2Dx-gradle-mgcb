@@ -12,7 +12,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath "org.mini2Dx:gradle-mini2Dx-mgcb:1.1.0"
+        classpath "org.mini2Dx:gradle-mini2Dx-mgcb:1.2.0"
     }
 }
 
@@ -58,6 +58,9 @@ mgcb {
     //By default it searches for the following folders with the assets directory:
     //music , tracks , soundtrack
     musicDirectory = file('../path/to/assets/music')
+    
+    sfxQuality = "High"
+    musicQuality = "High"
 }
 ```
 
