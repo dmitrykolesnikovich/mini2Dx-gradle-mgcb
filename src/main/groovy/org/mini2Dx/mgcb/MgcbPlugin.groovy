@@ -38,6 +38,9 @@ class MgcbPlugin implements Plugin<Project> {
                 task.dllsProperty = extension.dlls;
                 task.platform = extension.platform;
                 task.compress = extension.compress;
+
+                task.sfxQuality = extension.sfxQuality == null ? "Medium" : extension.sfxQuality;
+                task.musicQuality = extension.musicQuality == null ? "Medium" : extension.musicQuality;
             }
         });
     }

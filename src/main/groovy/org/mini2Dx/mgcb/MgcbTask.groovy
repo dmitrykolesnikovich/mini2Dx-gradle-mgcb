@@ -55,6 +55,11 @@ class MgcbTask extends DefaultTask {
     @Input
     boolean compress;
 
+    @Input
+    String sfxQuality;
+    @Input
+    String musicQuality;
+
     @OutputDirectory
     DirectoryProperty projectDirectoryProperty;
 
@@ -188,7 +193,7 @@ class MgcbTask extends DefaultTask {
             printWriter.println("/importer:OggImporter");
         }
         printWriter.println("/processor:SoundEffectProcessor");
-        printWriter.println("/processorParam:Quality=Best");
+        printWriter.println("/processorParam:Quality=" + sfxQuality);
         printWriter.println("/build:" + getFileRelativePath(outputDir, file) + ";" + getFileRelativePath(assetDir, file) + getSuffix(file));
     }
 
@@ -202,7 +207,7 @@ class MgcbTask extends DefaultTask {
             printWriter.println("/importer:OggImporter");
         }
         printWriter.println("/processor:SongProcessor");
-        printWriter.println("/processorParam:Quality=Best");
+        printWriter.println("/processorParam:Quality=" + musicQuality);
         printWriter.println("/build:" + getFileRelativePath(outputDir, file) + ";" + getFileRelativePath(assetDir, file) + getSuffix(file));
     }
 

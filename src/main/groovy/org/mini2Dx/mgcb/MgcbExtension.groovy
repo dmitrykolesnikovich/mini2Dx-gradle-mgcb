@@ -30,6 +30,9 @@ class MgcbExtension {
     String platform;
     boolean compress;
 
+    String sfxQuality;
+    String musicQuality;
+
     MgcbExtension(Project project) {
         assetsDirectory = project.objects.directoryProperty();
         projectDirectory = project.objects.directoryProperty();
@@ -82,5 +85,21 @@ class MgcbExtension {
 
     void setCompress(boolean compress) {
         this.compress = compress
+    }
+
+    String getSfxQuality() {
+        return sfxQuality
+    }
+
+    void setSfxQuality(String sfxQuality) {
+        this.sfxQuality = sfxQuality
+    }
+
+    String getMusicQuality() {
+        return musicQuality
+    }
+
+    void setMusicQuality(String musicQuality) {
+        this.musicQuality = musicQuality
     }
 }
