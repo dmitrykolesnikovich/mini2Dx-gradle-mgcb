@@ -59,8 +59,11 @@ mgcb {
     //music , tracks , soundtrack
     musicDirectory = file('../path/to/assets/music')
     
-    sfxQuality = "High"
-    musicQuality = "High"
+    //Best, Medium or Low based on MG spec
+    sfxQuality = "Best"
+    
+    //Best, Medium or Low based on MG spec
+    musicQuality = "Best"
 }
 ```
 
